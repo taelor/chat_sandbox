@@ -1,0 +1,30 @@
+<%= juggernaut(:channels => [@chat_room.id], :client_id => session[:user_id]) %>
+
+<script type="text/javascript">
+function scrollChatPanel(){
+  div = $('chat_room');			
+  div.scrollTop = 0xffff;
+}
+</script>
+
+<p><%= link_to 'Back', chat_rooms_path %></p>
+
+<h1><%=h @chat_room.name %></h1>
+
+<p><%=h @chat_room.description %></p>
+
+<div id="chat_room"></div>
+
+<div id="user_list"></div>
+
+<div id="chat_form">
+	<%= form_remote_tag(
+	    :url => { :action => :send_data },
+	    :complete => "$('chat_input').value = ''" ) %>
+
+		<%= text_field_tag( 'chat_input', '', { :size => '50', :id => 'chat_input'} ) %>
+		<%= submit_tag "Chat" %>
+	</form>
+</div>
+
+

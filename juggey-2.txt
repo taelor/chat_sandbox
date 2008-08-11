@@ -1,0 +1,210 @@
+Juggernaut Part 2 - Displaying Users in a Chat Room
+
+In the second installment of my series on Juggernaut, I tackle the issue of displaying the current users in a chat room. Warning, this does involve some Gem hacking.
+
+h2. In Our Last Episode...
+
+First off, please read "The Juggernaut, a Push Server for Ruby on Rails":http://slightlycoded.com/blog/the-juggernaut-a-push-server-for-ruby-on-rails, since all of the code here, is built on top of that, not to mentions the principles behind it. As for some background, please refer to "a question I asked awhile back":http://groups.google.com/group/Juggernaut-for-Rails/browse_thread/thread/b692c7cb95989e0b?hl=en, and the rest of the discussion board.
+
+Disclaimer: I know this may not be the best solution, and there are probably ones that are better, this one just worked for me.
+
+h2. Subscription and Logout 
+
+I first wanted to cover these basics, which are alreay used in Juggernaut, but serve as a basic idea for how my users list implementation works. When a Flash connection is made or lost, the Juggernaut server triggers some requests to your server. These are actual URLs on your webserver. Think of something like after a Paypal transaction is completed, they post a request to your server to confirm it. I learned this from "Nic Cavigliano's post a little while back":http://ncavig.com/blog/?page_id=10, it maybe be a little dated, but still some of it is relevant.
+
+First off we need to tell Juggernaut what links they need to request when a trigger is set off. Add this to your juggernaut.yml file, the one that the Juggernaut server uses to start up with.
+
+<pre>
+<code>
+#in juggernaut.yml
+:subscription_url: http://shovelchat.com/connections/login
+
+:logout_connection_url: http://shovelchat.com/connections/logout
+</code>
+</pre>
+
+
+Well that looks good, but how is the Rails server going to handle it? Lets create another controller and actions to handle this. First we get the user from the client_id that Juggernaut sent us, which we told Juggy that it was the user.id. Next for some reason we have to make sure ruby knows all the channels in the array are integer, because when they are sent over http, they are as strings. There is probably a better way to do that. Next we just render some simple javascript alerting all the users in the room that a person has joined or left. I think there is some way that we could refactor this not to make a database call to the User, just not sure how yet.
+
+<pre>
+<code>
+# in your console
+script/generate controller login logout
+
+#in /app/controlers/connections_controller.rb
+	def login
+	  @user = User.find(params[:client_id])
+  
+	  #convert all the strings to integers
+	  channels = params[:channels].collect{|channel| channel.to_i } 
+  
+	  render :juggernaut => {:type => :send_to_channels, :channels => channels } do |page|
+	    page.insert_html :bottom, 'chat_room', "<p style='color:green;font-size:20px;'>#{@user.login} has entered the room</p>"
+	    page.call :scrollChatPanel
+	  end
+  
+	  render :nothing => true
+	end
+
+	def logout
+	  @user = User.find(params[:client_id])
+  
+	  #convert all the strings to integers
+	  channels = params[:channels].collect{|channel| channel.to_i }
+  
+	  Juggernaut.remove_channels_from_clients(@user.id, channels)
+  
+	  render :juggernaut => {:type => :send_to_channels, :channels => channels } do |page|
+	    page.insert_html :bottom, 'chat_room', "<p style='color:green;font-size:20px;'>#{@user.login} has left the room</p>"
+	    page.call :scrollChatPanel
+	  end
+  
+	  render :nothing => true
+	end
+</code>
+</pre>
+
+
+Ok a pretty good start, with just minimal amounts of code we have given a lot of data to people using the app. Now for the big stuff.
+
+h2. Cutting the Gem, Re-wiring the Plugin.
+
+To push out the info of all the people in the chat room, I first tried what was discussed here, but couldn't get what I needed back. So after A little looking around I found people were using the database and the subscription/logout methods to track when people were in the room. This is good, just a little to much database overhead for my taste, also, the information is already stored on the Juggy server, so having it in the Rails database is a little redundant. After digging through the gem and plugin source, I kinda figured out how to do it. First off lets add something to the plugin to tell the Juggy server what we want.
+
+<pre>
+<code>
+# add this around line 75 of /vendor/plugins/
+	def show_users_for_channel_and_post(channels)
+	  fc = {
+	    :command    => :query,
+	    :type       => :show_users_for_channel_and_post,
+	    :channels   => channels
+	  }
+	  send_data(fc)
+	end
+
+#next add this line after the render :juggernaut in your connections controller for both login and logout actions
+Juggernaut.show_users_for_channel_and_post channels
+</code>
+</pre>
+
+
+The show_users_for_channel_and_post() method sends a query to the Juggy server (which is the gem source code). The line in the controller calls that method. So lets head into the gem source itself and check it out. The best way to probably do this is to unpack the gem into your vender folder, but I went ahead and just hacked it into my gem repo anyway. Btw, if you do it that way, it gets messy to deploy.
+
+<pre>
+<code>
+# /usr/local/lib/ruby/gems/1.8/gems/juggernaut-0.5.5/lib/juggernaut/server for me on my Mac OS X,
+# at the bottom of the case statement in the query_command method around line 250 add this
+	when :show_users_for_channel_and_post
+		query_needs :channels
+		users_query_request Juggernaut::Client.find_by_channels(@request[:channels]).collect{ |client| client.id }
+</code>
+</pre>
+
+
+The above code will find all the client id's connected to that channel and then pass that off to the users_query_request method. So now we have to write that method. So in that same file add this at the bottom, right above the client_ip method.
+
+<pre>
+<code>
+	def users_query_request(clients)
+		return false unless options[:users_request_url]
+		url = URI.parse(options[:users_request_url])
+		params = []
+		clients.each{|client| params << "clients[]=#{client}" }
+		(@request[:channels] || []).each {|chan| params << "channels[]=#{chan}" }
+		url.query = params.join('&')
+		begin
+			open(url.to_s, "User-Agent" => "Ruby/#{RUBY_VERSION}")
+		rescue Timeout::Error
+			return false
+		rescue
+			return false
+		end
+		true
+	end
+</code>
+</pre>
+
+Ok, so you see that options[:users_request_url]? Well the options hash is loaded from the juggernaut.yml file, so lets add one more line there.
+
+<pre>
+<code>
+#in juggernaut.yml
+	:users_request_url: http://localhost:3000/connections/users
+</code>
+</pre>
+
+Ok, stay with me now, the Juggernaut server will make a request to the Rails server with all the clients in an array, so let's add that action into our Connections controller, so we can get the login names, create some javascript to show, and then push it out to everyone connected to that channel.
+
+<pre>
+<code>
+def users
+	users = User.find(params[:clients])
+
+	channels = params[:channels].collect{|channel| channel.to_i }
+
+	render :juggernaut => {:type => :send_to_channels, :channels => channels } do |page|
+	  page.replace_html 'user_list', users.collect{ |user| "<li>#{user.login}</li>" }.join
+	end
+
+	render :nothing => true
+end
+</code>
+</pre>
+
+
+Simple enough right? Now this is just a normal render for the Juggernaut server, so our hacking on gems and plugins is done. But there is something we forgot to add, the actual user list in the view! We could also use some CSS im sure too.
+
+<pre>
+<code>
+#put this right after the chat_room div in /app/views/chat_rooms/show
+	<ul id="user_list"></ul>
+	
+#and the css
+	#chat_room, #user_list{
+		border:1px solid black;
+		overflow-y: scroll;
+		scrollbar-arrow-color:000000;
+		scrollbar-track-color:000000;
+		scrollbar-shadow-color:B1D0F0;
+		scrollbar-face-color:B1D0F0;
+		scrollbar-highlight-color:B1D0F0;
+		scrollbar-darkshadow-color:B1D0F0;
+		scrollbar-3dlight-color:B1D0F0;
+	}
+
+	#chat_room
+	{
+		float: left;
+		width:600px; 
+		height:400px; 
+		padding:5px;
+	}
+
+	#user_list {
+		list-style-type: none;
+		padding:5px;
+		margin-left:10px;
+		float: left;
+		width: 150px;
+		height: 400px;
+	}
+
+	#chat_form{
+		clear:both;
+	}
+
+	#chat_input{
+		padding:5px;
+		margin-top: 10px;
+		font-size: 15px;
+		border: 1px solid black;
+	}
+</code>
+</pre>
+
+h2. What's next?
+
+Well I think it would be nice if we could just get all the clients without making Juggernaut post to /connections/users. If we can just get the Juggernaut.send_data(:command=>"query", :type=>"show_users_for_channel" :channels=>channels) to send back the proper JSON, we can bypass that /connections/users request and render the user_list javascript immediately. I think it might have something to do with the way the information is wrapped up (or lack there of) for the request. 
+
+One thing to note, the information that Juggernaut.send_data(:command=>"query", :type=>"show_users_for_channel" :channels=>channels) returns is whats in your config/juggernaut_hosts.yml file. Not sure why, but it might be a clue as to whats going wrong.

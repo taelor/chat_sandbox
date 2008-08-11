@@ -1,0 +1,24 @@
+<h1>Listing chat_rooms</h1>
+
+<table>
+  <tr>
+	<th># of Users</th>
+    <th>Name</th>
+    <th>Description</th>
+  </tr>
+
+<% for chat_room in @chat_rooms %>
+  <tr>
+	<td><%=Juggernaut.show_users_for_channels(chat_room.id).size %></td>
+    <td><%=h chat_room.name %></td>
+    <td><%=h chat_room.description %></td>
+    <td><%= link_to 'Show', chat_room %></td>
+    <td><%= link_to 'Edit', edit_chat_room_path(chat_room) %></td>
+    <td><%= link_to 'Destroy', chat_room, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New chat_room', new_chat_room_path %>
