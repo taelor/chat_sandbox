@@ -1,5 +1,5 @@
 class ChatRoomsController < ApplicationController
-  before_filter :is_logged_in?, :except => :index
+  before_filter :is_logged_in?
   # GET /chat_rooms
   # GET /chat_rooms.xml
   def index

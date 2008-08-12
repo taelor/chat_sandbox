@@ -1,0 +1,1 @@
+page.insert_html :bottom, 'private_messages', create_private_message(@client_ids)

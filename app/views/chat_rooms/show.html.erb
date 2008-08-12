@@ -1,12 +1,5 @@
 <%= juggernaut(:channels => [@chat_room.id], :client_id => session[:user_id]) %>
 
-<script type="text/javascript">
-function scrollChatPanel(){
-  div = $('chat_room');			
-  div.scrollTop = 0xffff;
-}
-</script>
-
 <p><%= link_to 'Back', chat_rooms_path %></p>
 
 <h1><%=h @chat_room.name %></h1>

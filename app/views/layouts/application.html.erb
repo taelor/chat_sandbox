@@ -7,6 +7,12 @@
   <title>ChatRooms: <%= controller.action_name %></title>
   <%= javascript_include_tag 'prototype', :juggernaut %>
   <%= stylesheet_link_tag 'scaffold' %>
+  <script type="text/javascript">
+	function scrollChatPanel(room){
+	  div = $(room);			
+	  div.scrollTop = 0xffff;
+	}
+  </script>
 </head>
 <body>
 

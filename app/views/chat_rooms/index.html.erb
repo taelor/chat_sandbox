@@ -1,3 +1,5 @@
+<%= juggernaut(:channels => [0], :client_id => session[:user_id]) %>
+
 <h1>Listing chat_rooms</h1>
 
 <table>
@@ -22,3 +24,9 @@
 <br />
 
 <%= link_to 'New chat_room', new_chat_room_path %>
+
+<br />
+
+<div id="user_list"></div>
+
+<div id="private_messages"></div>
