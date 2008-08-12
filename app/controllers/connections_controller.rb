@@ -36,7 +36,7 @@ class ConnectionsController < ApplicationController
   def update_chat_room(action)
     render :juggernaut => {:type => :send_to_channels, :channels => @channels } do |page|
       page.insert_html :bottom, 'chat_room', "<p style='color:green;font-size:20px;'>#{@user.login} has #{action} the room</p>"
-      page.call :scrollChatPanel
+      page.call :scrollChatPanel, 'chat_room'
     end
   end
 end

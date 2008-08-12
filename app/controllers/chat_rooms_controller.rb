@@ -87,7 +87,7 @@ class ChatRoomsController < ApplicationController
   def send_data
       render :juggernaut => {:type => :send_to_channels, :channels => [params[:id].to_i] } do |page|
         page.insert_html :bottom, 'chat_room', "<p>#{current_user.login}: #{h params[:chat_input]}</p>"
-        page.call :scrollChatPanel
+        page.call :scrollChatPanel, 'chat_room'
       end
       render :nothing => true
   end
