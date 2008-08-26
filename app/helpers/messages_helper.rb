@@ -12,7 +12,7 @@ module MessagesHelper
     
     submit = submit_tag "Chat"
     
-    bottom ="</form></div><div"
+    bottom ="</form></div></div>"
     
     top+form+text+submit+bottom
   end
