@@ -76,7 +76,7 @@ class <%= model_controller_class_name %>ControllerTest < Test::Unit::TestCase
     assert_not_nil flash[:notice]
     assert_equal <%= table_name %>(:aaron), <%= class_name %>.authenticate('aaron', 'test')
   end
-  
+
   def test_should_not_activate_user_without_key
     get :activate
     assert_nil flash[:notice]

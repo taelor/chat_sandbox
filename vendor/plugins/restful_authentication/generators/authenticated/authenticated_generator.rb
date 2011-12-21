@@ -2,7 +2,7 @@ require 'restful_authentication/rails_commands'
 class AuthenticatedGenerator < Rails::Generator::NamedBase
   default_options :skip_migration => false,
                   :include_activation => false
-                  
+
   attr_reader   :controller_name,
                 :controller_class_path,
                 :controller_file_path,
@@ -26,7 +26,7 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
 
   def initialize(runtime_args, runtime_options = {})
     super
-    
+
     @rspec = has_rspec?
 
     @controller_name = args.shift || 'sessions'
@@ -46,7 +46,7 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
     # model controller
     base_name, @model_controller_class_path, @model_controller_file_path, @model_controller_class_nesting, @model_controller_class_nesting_depth = extract_modules(@model_controller_name)
     @model_controller_class_name_without_nesting, @model_controller_singular_name, @model_controller_plural_name = inflect_names(base_name)
-    
+
     if @model_controller_class_nesting.empty?
       @model_controller_class_name = @model_controller_class_name_without_nesting
     else
@@ -181,7 +181,7 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
           :migration_name => "Create#{class_name.pluralize.gsub(/::/, '')}"
         }, :migration_file_name => "create_#{file_path.gsub(/\//, '_').pluralize}"
       end
-      
+
       m.route_resource  controller_singular_name
       m.route_resources model_controller_plural_name
     end
@@ -189,7 +189,7 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
     action = nil
     action = $0.split("/")[1]
     case action
-      when "generate" 
+      when "generate"
         puts
         puts ("-" * 70)
         puts "Don't forget to:"
@@ -219,7 +219,7 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
         puts
         puts ("-" * 70)
         puts
-      when "destroy" 
+      when "destroy"
         puts
         puts ("-" * 70)
         puts
@@ -241,7 +241,7 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
   def has_rspec?
     options[:rspec] || (File.exist?('spec') && File.directory?('spec'))
   end
-  
+
   protected
     # Override with your own usage banner.
     def banner
@@ -251,11 +251,11 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
     def add_options!(opt)
       opt.separator ''
       opt.separator 'Options:'
-      opt.on("--skip-migration", 
+      opt.on("--skip-migration",
              "Don't generate a migration file for this model") { |v| options[:skip_migration] = v }
-      opt.on("--include-activation", 
+      opt.on("--include-activation",
              "Generate signup 'activation code' confirmation via email") { |v| options[:include_activation] = true }
-      opt.on("--stateful", 
+      opt.on("--stateful",
              "Use acts_as_state_machine.  Assumes --include-activation") { |v| options[:include_activation] = options[:stateful] = true }
       opt.on("--rspec",
              "Force rspec mode (checks for RAILS_ROOT/spec by default)") { |v| options[:rspec] = true }

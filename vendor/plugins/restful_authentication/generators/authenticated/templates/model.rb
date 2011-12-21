@@ -27,15 +27,15 @@ class <%= class_name %> < ActiveRecord::Base
   event :register do
     transitions :from => :passive, :to => :pending, :guard => Proc.new {|u| !(u.crypted_password.blank? && u.password.blank?) }
   end
-  
+
   event :activate do
-    transitions :from => :pending, :to => :active 
+    transitions :from => :pending, :to => :active
   end
-  
+
   event :suspend do
     transitions :from => [:passive, :pending, :active], :to => :suspended
   end
-  
+
   event :delete do
     transitions :from => [:passive, :pending, :active, :suspended], :to => :deleted
   end
@@ -61,10 +61,10 @@ class <%= class_name %> < ActiveRecord::Base
 <% end %>
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
   def self.authenticate(login, password)
-    u = <% 
+    u = <%
     if options[:stateful] %>find_in_state :first, :active, :conditions => {:login => login}<%
-    elsif options[:include_activation] %>find :first, :conditions => ['login = ? and activated_at IS NOT NULL', login]<% 
-    else %>find_by_login(login)<% 
+    elsif options[:include_activation] %>find :first, :conditions => ['login = ? and activated_at IS NOT NULL', login]<%
+    else %>find_by_login(login)<%
     end %> # need to get the salt
     u && u.authenticated?(password) ? u : nil
   end
@@ -84,7 +84,7 @@ class <%= class_name %> < ActiveRecord::Base
   end
 
   def remember_token?
-    remember_token_expires_at && Time.now.utc < remember_token_expires_at 
+    remember_token_expires_at && Time.now.utc < remember_token_expires_at
   end
 
   # These create and unset the fields required for remembering users between browser closes
@@ -114,13 +114,13 @@ class <%= class_name %> < ActiveRecord::Base
   end
 
   protected
-    # before filter 
+    # before filter
     def encrypt_password
       return if password.blank?
       self.salt = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if new_record?
       self.crypted_password = encrypt(password)
     end
-      
+
     def password_required?
       crypted_password.blank? || !password.blank?
     end

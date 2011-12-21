@@ -13,7 +13,7 @@ class <%= model_controller_class_name %>Controller < ApplicationController
 
   def create
     cookies.delete :auth_token
-    # protects against session fixation attacks, wreaks havoc with 
+    # protects against session fixation attacks, wreaks havoc with
     # request forgery protection.
     # uncomment at your own risk
     # reset_session
@@ -38,12 +38,12 @@ class <%= model_controller_class_name %>Controller < ApplicationController
   end
 <% end %><% if options[:stateful] %>
   def suspend
-    @<%= file_name %>.suspend! 
+    @<%= file_name %>.suspend!
     redirect_to <%= table_name %>_path
   end
 
   def unsuspend
-    @<%= file_name %>.unsuspend! 
+    @<%= file_name %>.unsuspend!
     redirect_to <%= table_name %>_path
   end
 
