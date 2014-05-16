@@ -4,45 +4,45 @@ require "socket"
 module Juggernaut
   CONFIG = YAML::load(ERB.new(IO.read("#{RAILS_ROOT}/config/juggernaut_hosts.yml")).result).freeze
   CR = "\0"
-  
+
   class << self
-    
+
     def send_to_all(data)
       fc = {
         :command   => :broadcast,
-        :body      => data, 
+        :body      => data,
         :type      => :to_channels,
         :channels  => []
       }
       send_data(fc)
     end
-    
+
     def send_to_channels(data, channels)
       fc = {
         :command   => :broadcast,
-        :body      => data, 
+        :body      => data,
         :type      => :to_channels,
         :channels  => channels
       }
       send_data(fc)
     end
     alias send_to_channel send_to_channels
-    
+
     def send_to_clients(data, client_ids)
       fc = {
         :command    => :broadcast,
-        :body       => data, 
+        :body       => data,
         :type       => :to_clients,
         :client_ids => client_ids
       }
       send_data(fc)
     end
     alias send_to_client send_to_clients
-    
+
     def send_to_clients_on_channels(data, client_ids, channels)
       fc = {
         :command    => :broadcast,
-        :body       => data, 
+        :body       => data,
         :type       => :to_clients,
         :client_ids => client_ids,
         :channels   => channels
@@ -51,7 +51,7 @@ module Juggernaut
     end
     alias send_to_client_on_channel send_to_clients_on_channels
     alias send_to_client_on_channel send_to_clients_on_channels
-    
+
     def remove_channels_from_clients(client_ids, channels)
       fc = {
         :command    => :query,
@@ -63,7 +63,7 @@ module Juggernaut
     end
     alias remove_channel_from_client remove_channels_from_clients
     alias remove_channels_from_client remove_channels_from_clients
-    
+
     def remove_all_channels(channels)
       fc = {
         :command    => :query,
@@ -72,7 +72,7 @@ module Juggernaut
       }
       send_data(fc)
     end
-    
+
     def show_users
       fc = {
         :command  => :query,
@@ -80,7 +80,7 @@ module Juggernaut
       }
       send_data(fc, true).flatten
     end
-    
+
     def show_user(client_id)
       fc = {
         :command    => :query,
@@ -89,7 +89,7 @@ module Juggernaut
       }
       send_data(fc, true).flatten[0]
     end
-    
+
     def show_users_for_channels(channels)
       fc = {
         :command    => :query,
@@ -103,12 +103,12 @@ module Juggernaut
     def send_data(hash, response = false)
       hash[:channels]   = hash[:channels].to_a   if hash[:channels]
       hash[:client_ids] = hash[:client_ids].to_a if hash[:client_ids]
-      
+
       res = []
       hosts.each do |address|
         begin
           hash[:secret_key] = address[:secret_key] if address[:secret_key]
-          
+
           @socket = TCPSocket.new(address[:host], address[:port])
           # the \0 is to mirror flash
           @socket.print(hash.to_json + CR)
@@ -120,22 +120,22 @@ module Juggernaut
       end
       res.collect {|r| ActiveSupport::JSON.decode(r.chomp!(CR)) } if response
     end
-    
+
   private
-    
+
     def hosts
-      CONFIG[:hosts].select {|h| 
+      CONFIG[:hosts].select {|h|
         !h[:environment] or h[:environment].to_s == ENV['RAILS_ENV']
       }
     end
-    
+
   end
-  
+
   module RenderExtension
     def self.included(base)
       base.send :include, InstanceMethods
     end
-    
+
     module InstanceMethods
       # We can't protect these as ActionMailer complains
       # protected
@@ -161,7 +161,7 @@ module Juggernaut
           if !options or !options.is_a?(Hash)
             return Juggernaut.send_to_all(data)
           end
-          
+
           case options[:type]
             when :send_to_all
               Juggernaut.send_to_all(data)
@@ -197,7 +197,7 @@ module Juggernaut
             raise "You must specify #{a}" unless options[a]
           end
         end
-        
+
     end
   end
 end

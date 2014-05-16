@@ -1,6 +1,6 @@
 # You should list any juggernaut hosts here.
 # You need only specify the secret key if you're using that type of authentication (see juggernaut.yml)
-# 
+#
 # Name:                       Mapping:
 # :port                       internal push server's port
 # :host                       internal push server's host/ip

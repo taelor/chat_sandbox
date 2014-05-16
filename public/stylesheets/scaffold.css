@@ -79,8 +79,8 @@ a:hover { color: #fff; background-color:#000; }
 #chat_room
 {
 	float: left;
-	width:600px; 
-	height:400px; 
+	width:600px;
+	height:400px;
 	padding:5px;
 }
 
@@ -106,10 +106,10 @@ a:hover { color: #fff; background-color:#000; }
 
 .private_message{
 	margin-left :10px;
-	float: left; 
-	height: 400px; 
+	float: left;
+	height: 400px;
 	padding: 10px;
-	border: 1px solid black;	
+	border: 1px solid black;
 }
 
 .private_chat_room{

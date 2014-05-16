@@ -8,7 +8,7 @@ First off, please read "The Juggernaut, a Push Server for Ruby on Rails":http://
 
 Disclaimer: I know this may not be the best solution, and there are probably ones that are better, this one just worked for me.
 
-h2. Subscription and Logout 
+h2. Subscription and Logout
 
 I first wanted to cover these basics, which are alreay used in Juggernaut, but serve as a basic idea for how my users list implementation works. When a Flash connection is made or lost, the Juggernaut server triggers some requests to your server. These are actual URLs on your webserver. Think of something like after a Paypal transaction is completed, they post a request to your server to confirm it. I learned this from "Nic Cavigliano's post a little while back":http://ncavig.com/blog/?page_id=10, it maybe be a little dated, but still some of it is relevant.
 
@@ -34,31 +34,31 @@ script/generate controller login logout
 #in /app/controlers/connections_controller.rb
 	def login
 	  @user = User.find(params[:client_id])
-  
+
 	  #convert all the strings to integers
-	  channels = params[:channels].collect{|channel| channel.to_i } 
-  
+	  channels = params[:channels].collect{|channel| channel.to_i }
+
 	  render :juggernaut => {:type => :send_to_channels, :channels => channels } do |page|
 	    page.insert_html :bottom, 'chat_room', "<p style='color:green;font-size:20px;'>#{@user.login} has entered the room</p>"
 	    page.call :scrollChatPanel
 	  end
-  
+
 	  render :nothing => true
 	end
 
 	def logout
 	  @user = User.find(params[:client_id])
-  
+
 	  #convert all the strings to integers
 	  channels = params[:channels].collect{|channel| channel.to_i }
-  
+
 	  Juggernaut.remove_channels_from_clients(@user.id, channels)
-  
+
 	  render :juggernaut => {:type => :send_to_channels, :channels => channels } do |page|
 	    page.insert_html :bottom, 'chat_room', "<p style='color:green;font-size:20px;'>#{@user.login} has left the room</p>"
 	    page.call :scrollChatPanel
 	  end
-  
+
 	  render :nothing => true
 	end
 </code>
@@ -159,7 +159,7 @@ Simple enough right? Now this is just a normal render for the Juggernaut server,
 <code>
 #put this right after the chat_room div in /app/views/chat_rooms/show
 	<ul id="user_list"></ul>
-	
+
 #and the css
 	#chat_room, #user_list{
 		border:1px solid black;
@@ -176,8 +176,8 @@ Simple enough right? Now this is just a normal render for the Juggernaut server,
 	#chat_room
 	{
 		float: left;
-		width:600px; 
-		height:400px; 
+		width:600px;
+		height:400px;
 		padding:5px;
 	}
 
@@ -205,6 +205,6 @@ Simple enough right? Now this is just a normal render for the Juggernaut server,
 
 h2. What's next?
 
-Well I think it would be nice if we could just get all the clients without making Juggernaut post to /connections/users. If we can just get the Juggernaut.send_data(:command=>"query", :type=>"show_users_for_channel" :channels=>channels) to send back the proper JSON, we can bypass that /connections/users request and render the user_list javascript immediately. I think it might have something to do with the way the information is wrapped up (or lack there of) for the request. 
+Well I think it would be nice if we could just get all the clients without making Juggernaut post to /connections/users. If we can just get the Juggernaut.send_data(:command=>"query", :type=>"show_users_for_channel" :channels=>channels) to send back the proper JSON, we can bypass that /connections/users request and render the user_list javascript immediately. I think it might have something to do with the way the information is wrapped up (or lack there of) for the request.
 
 One thing to note, the information that Juggernaut.send_data(:command=>"query", :type=>"show_users_for_channel" :channels=>channels) returns is whats in your config/juggernaut_hosts.yml file. Not sure why, but it might be a clue as to whats going wrong.

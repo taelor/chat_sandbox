@@ -7,13 +7,13 @@ class <%= class_name %>Mailer < ActionMailer::Base
   <% else %>
     @body[:url]  = "http://YOURSITE/login/" <% end %>
   end
-  
+
   def activation(<%= file_name %>)
     setup_email(<%= file_name %>)
     @subject    += 'Your account has been activated!'
     @body[:url]  = "http://YOURSITE/"
   end
-  
+
   protected
     def setup_email(<%= file_name %>)
       @recipients  = "#{<%= file_name %>.email}"

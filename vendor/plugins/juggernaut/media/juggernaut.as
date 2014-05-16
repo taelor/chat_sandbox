@@ -29,9 +29,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import flash.external.ExternalInterface;
 
 class SocketServer {
-  
+
   static var socket : XMLSocket;
-  
+
   static function connect(host:String, port:Number) {
     // The following line was causing crashes on Leopard
     // System.security.loadPolicyFile('xmlsocket://' + host + ':' + port);
@@ -42,11 +42,11 @@ class SocketServer {
     socket.onClose = onDisconnect;
     socket.connect(host, port);
   }
-  
+
   static function disconnect(){
     socket.close();
   }
-  
+
   static function onConnect(success:Boolean) {
     if(success){
       ExternalInterface.call("juggernaut.connected");
@@ -54,26 +54,26 @@ class SocketServer {
       ExternalInterface.call("juggernaut.errorConnecting");
     }
   }
-  
+
   static function sendData(data:String){
     socket.send(unescape(data));
   }
-  
+
   static function onDisconnect() {
     ExternalInterface.call("juggernaut.disconnected");
   }
-  
-  static function onData(data:String) {    
+
+  static function onData(data:String) {
     ExternalInterface.call("juggernaut.receiveData", escape(data));
   }
-  
+
   static function main() {
     ExternalInterface.addCallback("connect", null, connect);
     ExternalInterface.addCallback("sendData", null, sendData);
     ExternalInterface.addCallback("disconnect", null, disconnect);
-    
+
     ExternalInterface.call("juggernaut.initialized");
   }
-  
+
 }
 

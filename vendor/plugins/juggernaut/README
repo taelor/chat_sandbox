@@ -70,7 +70,7 @@ The chat controller:
 class ChatController < ApplicationController
   def index
   end
-	
+
   def send_data
     render :juggernaut do |page|
       page.insert_html :top, 'chat_data', "<li>#{h params[:chat_input]}</li>"
@@ -131,7 +131,7 @@ end
 
 Other juggernaut render options:
 OPTION_TYPE                     PARAMS
-:send_to_all                  
+:send_to_all
 :send_to_channels               :channels
 :send_to_channel                :channel
 :send_to_client                 :client_id
@@ -162,10 +162,10 @@ Ok, remote clients that visit pages on this server (once you restart it) will co
 authentication (recommended) you'll find that the broadcast authentication fails.
 You'll need to add the Rails IP to juggernaut.yml, like so:
 
-:allowed_ips: 
+:allowed_ips:
         - 127.0.0.1
         - 192.168.0.4 # IP of the Rails app
-             
+
 ===============================================
 Troubleshooting
 ===============================================

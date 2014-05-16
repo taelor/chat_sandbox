@@ -83,7 +83,7 @@ class ChatRoomsController < ApplicationController
       format.xml  { head :ok }
     end
   end
-  
+
   def send_data
       render :juggernaut => {:type => :send_to_channels, :channels => [params[:id].to_i] } do |page|
         page.insert_html :bottom, 'chat_room', "<p>#{current_user.login}: #{h params[:chat_input]}</p>"
@@ -91,7 +91,7 @@ class ChatRoomsController < ApplicationController
       end
       render :nothing => true
   end
-  
+
  	private
 
 	def is_logged_in?

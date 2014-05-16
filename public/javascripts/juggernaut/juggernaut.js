@@ -24,7 +24,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 if (typeof Prototype == 'undefined') throw("Juggernaut error. Prototype could not be found.");
 if (Prototype.Version < "1.6") throw("Juggernaut error. Prototype 1.6.0 is required.");
 
-var Juggernaut = Class.create({ 
+var Juggernaut = Class.create({
   is_connected: false,
   attempting_to_reconnect: false,
   ever_been_connected: false,
@@ -36,24 +36,24 @@ var Juggernaut = Class.create({
       this.hasFirebug ? console.log(msg) : alert(msg);
     }
   },
-  
+
   fire_event: function(fx_name) {
      $(document).fire("juggernaut:" + fx_name);
    },
-  
+
   initialize: function(options) {
     this.options = options;
-    Event.observe(window, 'load', function() {      
+    Event.observe(window, 'load', function() {
       juggernaut = this;
       this.appendFlashObject()
     }.bind(this));
   },
-  
+
   initialized: function(){
     this.fire_event('initialized');
     this.connect();
   },
-  
+
   broadcast: function(body, type, client_ids, channels){
     var msg = new Hash();
     msg.set('command',  'broadcast');
@@ -63,25 +63,25 @@ var Juggernaut = Class.create({
     if(client_ids) msg.set('client_ids', client_ids);
     this.sendData(msg.toJSON());
   },
-  
+
   sendData: function(data){
     this.swf().sendData(escape(data));
   },
-  
+
   connect: function(){
     if(!this.is_connected){
       this.fire_event('connect');
       this.swf().connect(this.options.host, this.options.port);
     }
   },
-  
+
   disconnect: function(){
     if(this.is_connected) {
       this.swf().disconnect();
       this.is_connected = false;
     }
   },
-  
+
   connected: function(e) {
     var handshake = new Hash();
     handshake.set('command', 'subscribe');
@@ -109,7 +109,7 @@ var Juggernaut = Class.create({
      this.logger("Received data:\n" + msg.body + "\n");
      eval(msg.body);
   },
-  
+
   appendFlashObject: function(){
     if(this.swf()) {
       throw("Juggernaut error. 'swf_name' must be unique per juggernaut instance.");
@@ -119,10 +119,10 @@ var Juggernaut = Class.create({
     });
     $(document.body).insert({ bottom: this.element });
     swfobject.embedSWF(
-      this.options.swf_address, 
-      'juggernaut', 
-      this.options.width, 
-      this.options.height, 
+      this.options.swf_address,
+      'juggernaut',
+      this.options.width,
+      this.options.height,
       String(this.options.flash_version),
       this.options.ei_swf_address,
       {'bridgeName': this.options.bridge_name},
@@ -130,16 +130,16 @@ var Juggernaut = Class.create({
       {'id': this.options.swf_name, 'name': this.options.swf_name}
     );
   },
-  
+
   swf: function(){
     return $(this.options.swf_name);
   },
-  
+
   refreshFlashObject: function(){
     this.swf().remove();
     this.appendFlashObject();
   },
-  
+
   errorConnecting: function(e) {
     this.is_connected = false;
     if(!this.attempting_to_reconnect) {
@@ -157,7 +157,7 @@ var Juggernaut = Class.create({
       this.reconnect();
     }
   },
-  
+
   reconnect: function(){
     if(this.options.reconnect_attempts){
       this.attempting_to_reconnect = true;

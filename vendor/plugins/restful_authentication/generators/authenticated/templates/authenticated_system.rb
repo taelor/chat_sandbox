@@ -6,7 +6,7 @@ module AuthenticatedSystem
       !!current_<%= file_name %>
     end
 
-    # Accesses the current <%= file_name %> from the session. 
+    # Accesses the current <%= file_name %> from the session.
     # Future calls avoid the database because nil is not equal to false.
     def current_<%= file_name %>
       @current_<%= file_name %> ||= (login_from_session || login_from_basic_auth || login_from_cookie) unless @current_<%= file_name %> == false
